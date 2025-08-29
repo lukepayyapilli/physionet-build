@@ -32,7 +32,8 @@ from user.test_views import TestMixin, prevent_request_warnings
 
 PROJECT_VIEWS = [
     'project_overview', 'project_authors', 'project_content',
-                'project_access', 'project_discovery', 'project_ethics', 'project_upload_agreement', 'project_files',
+    'project_access', 'project_discovery', 'project_ethics',
+    'project_upload_agreement', 'project_files',
     'project_proofread', 'project_preview', 'project_submission'
 ]
 
@@ -422,6 +423,14 @@ class TestProjectCreation(TestMixin):
             reverse('project_overview', args=(project.slug,)))
         self.assertEqual(response.status_code, 200)
 
+        # Create an upload agreement for the new project so file uploads work
+        from project.models import UploadAgreement
+        UploadAgreement.objects.create(
+            project=project,
+            accepted=True,
+            no_human_subjects=True
+        )
+
         # Upload a file
         response = self.client.post(
             reverse('project_files', args=(project.slug,)),
@@ -647,6 +656,14 @@ class TestProjectTransfer(TestCase):
         self.project = ActiveProject.objects.get(slug=self.PROJECT_SLUG)
         self.submitting_author = self.project.authors.filter(is_submitting=True).first()
         self.coauthor = self.project.authors.filter(is_submitting=False).first()
+
+        # Create an upload agreement for the test project so file uploads work
+        from project.models import UploadAgreement
+        UploadAgreement.objects.create(
+            project=self.project,
+            accepted=True,
+            no_human_subjects=True
+        )
 
     def test_transfer_author(self):
         """

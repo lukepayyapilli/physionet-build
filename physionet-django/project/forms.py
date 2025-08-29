@@ -1208,12 +1208,26 @@ class UploadAgreementForm(forms.ModelForm):
             'human_subjects_deidentified',
         )
         labels = {
-            'no_human_subjects': 'This project does not contain any data derived from human subjects.',
-            'derived_data': 'This project contains data derived from other de-identified datasets published on PhysioNet or elsewhere.',
-            'human_subjects_deidentified': 'This project contains data obtained from human subjects, and all personally identifiable information has been removed.',
+            'no_human_subjects': (
+                'This project does not contain any data derived from human subjects.'
+            ),
+            'derived_data': (
+                'This project contains data derived from other de-identified datasets '
+                'published on PhysioNet or elsewhere.'
+            ),
+            'human_subjects_deidentified': (
+                'This project contains data obtained from human subjects, and all '
+                'personally identifiable information has been removed.'
+            ),
         }
         help_texts = {
-            'derived_data': 'You will need to cite these datasets in your project description, and explain how you created the derived data. Even if you are using data previously published elsewhere, we expect you to take all reasonable steps to ensure the files you are uploading are free of personally identifiable information.',
+            'derived_data': (
+                'You will need to cite these datasets in your project description, '
+                'and explain how you created the derived data. Even if you are using '
+                'data previously published elsewhere, we expect you to take all '
+                'reasonable steps to ensure the files you are uploading are free of '
+                'personally identifiable information.'
+            ),
         }
 
     def __init__(self, project, *args, **kwargs):
