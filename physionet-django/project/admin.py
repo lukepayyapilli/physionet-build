@@ -81,6 +81,30 @@ class LogAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('user').prefetch_related('project')
 
 
+class UploadAgreementAdmin(admin.ModelAdmin):
+    list_display = ('project', 'accepted', 'accepted_datetime', 'created_datetime')
+    list_filter = ('accepted', 'no_human_subjects', 'derived_data', 'human_subjects_deidentified')
+    search_fields = ('project__title', 'project__slug')
+    readonly_fields = ('created_datetime', 'updated_datetime')
+
+    fieldsets = (
+        ('Project Information', {
+            'fields': ('project',)
+        }),
+        ('Agreement Status', {
+            'fields': ('accepted', 'accepted_datetime')
+        }),
+        ('Data Type Options', {
+            'fields': ('no_human_subjects', 'derived_data', 'human_subjects_deidentified'),
+            'description': 'At least one option must be selected.'
+        }),
+        ('Timestamps', {
+            'fields': ('created_datetime', 'updated_datetime'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
 # Unregister the tasks to add the custom tasks to the amdin page
 admin.site.unregister(Task)
 admin.site.unregister(CompletedTask)
@@ -115,3 +139,4 @@ admin.site.register(GCPLog, LogAdmin)
 # Add the custom tasks to the admin page
 admin.site.register(Task, TaskAdmin)
 admin.site.register(CompletedTask, CompletedTaskAdmin)
+admin.site.register(models.UploadAgreement, UploadAgreementAdmin)
