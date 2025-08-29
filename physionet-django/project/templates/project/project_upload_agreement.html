@@ -80,7 +80,7 @@
         <hr>
         
         <div class="btn-container-rsp">
-          <button type="submit" class="btn btn-success btn-rsp" {% if not is_submitting or not project.author_editable %}disabled{% endif %}>
+          <button type="submit" class="btn btn-success btn-rsp" {% if not editable %}disabled{% endif %}>
             <i class="fa fa-check"></i> I Agree
           </button>
         </div>
