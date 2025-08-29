@@ -1,6 +1,6 @@
 from django.db import models
 from django.db import transaction
-from project.models import SafeHTMLField
+from project.modelcomponents.fields import SafeHTMLField
 from storages.backends.gcloud import GoogleCloudStorage
 
 

@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 
-from project.models import SafeHTMLField
+from project.modelcomponents.fields import SafeHTMLField
 
 
 class News(models.Model):

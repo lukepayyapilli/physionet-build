@@ -15,7 +15,7 @@ from project.modelcomponents.access import DataAccessRequest, DataAccessRequestR
 from project.modelcomponents.fields import SafeHTMLField
 from project.modelcomponents.metadata import Metadata, PublishedTopic
 from project.modelcomponents.submission import SubmissionInfo
-from project.models import AccessPolicy
+from project.modelcomponents.access import AccessPolicy
 from project.utility import StorageInfo, clear_directory, get_tree_size
 from project.validators import MAX_PROJECT_SLUG_LENGTH, validate_slug, validate_subdir
 from user.models import Training
