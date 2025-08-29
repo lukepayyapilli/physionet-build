@@ -50,6 +50,7 @@ from project.models import (
     Topic,
     UploadedDocument,
     AWS,
+    UploadAgreement,
 )
 from project.authorization.access import can_view_project_files, can_access_project
 from project.projectfiles import ProjectFiles
@@ -890,6 +891,57 @@ def project_discovery(request, project_slug, **kwargs):
          'remove_item_url':edit_url, 'is_submitting':is_submitting})
 
 
+@project_auth(auth_mode=0, post_auth_mode=2)
+def project_upload_agreement(request, project_slug, **kwargs):
+    """
+    Page to accept the upload agreement
+    """
+    project, is_submitting = (kwargs[k] for k in ('project', 'is_submitting'))
+
+    if is_submitting and project.author_editable():
+        editable = True
+    else:
+        editable = False
+
+    existing_agreement = UploadAgreement.get_active_agreement(project)
+
+    if request.method == 'POST':
+        # Pass the existing instance if it exists
+        if existing_agreement:
+            upload_agreement_form = forms.UploadAgreementForm(project=project,
+                                                              data=request.POST,
+                                                              instance=existing_agreement)
+        else:
+            upload_agreement_form = forms.UploadAgreementForm(project=project,
+                                                              data=request.POST)
+
+        if upload_agreement_form.is_valid():
+            upload_agreement_form.save()
+            messages.success(request, 'Upload agreement has been accepted.')
+            return redirect('project_files', project_slug=project.slug)
+        else:
+            messages.error(request, 'Invalid submission. See errors below.')
+    else:
+        # Get existing agreement or create new form
+        if existing_agreement:
+            upload_agreement_form = forms.UploadAgreementForm(project=project,
+                                                              instance=existing_agreement)
+        else:
+            upload_agreement_form = forms.UploadAgreementForm(project=project)
+
+    # Disable form fields if not editable
+    if not editable:
+        for field_name in upload_agreement_form.fields:
+            upload_agreement_form.fields[field_name].widget.attrs['disabled'] = 'disabled'
+
+    return render(request, 'project/project_upload_agreement.html', {
+        'project': project,
+        'upload_agreement_form': upload_agreement_form,
+        'is_submitting': is_submitting,
+        'editable': editable,
+    })
+
+
 class ProjectAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         qs = PublishedProject.objects.all()
@@ -1071,6 +1123,12 @@ def process_files_post(request, project):
         raise ServiceUnavailable()
 
     if 'upload_files' in request.POST:
+        # Check if upload agreement has been accepted
+        active_agreement = UploadAgreement.get_active_agreement(project)
+        if not active_agreement or not active_agreement.accepted:
+            messages.error(request, 'You must accept the upload agreement before uploading files.')
+            return ''
+
         form = forms.UploadFilesForm(project=project, data=request.POST,
             files=request.FILES)
         subdir = process_items(request, form)
@@ -1150,6 +1208,10 @@ def project_files(request, project_slug, subdir='', **kwargs):
      move_items_form, delete_items_form) = get_file_forms(
          project=project, subdir=subdir, display_dirs=display_dirs)
 
+    # Check if upload agreement has been accepted
+    from project.models import UploadAgreement
+    has_accepted_agreement = UploadAgreement.objects.filter(project=project, accepted=True).exists()
+
     return render(
         request,
         'project/project_files.html',
@@ -1177,6 +1239,7 @@ def project_files(request, project_slug, subdir='', **kwargs):
             'maintenance_message': maintenance_message,
             'is_lightwave_supported': project.files.is_lightwave_supported(),
             'storage_type': settings.STORAGE_TYPE,
+            'has_accepted_agreement': has_accepted_agreement,
         },
     )
 
