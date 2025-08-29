@@ -1213,7 +1213,7 @@ class UploadAgreementForm(forms.ModelForm):
             ),
             'derived_data': (
                 'This project contains data derived from other de-identified datasets '
-                'published on PhysioNet or elsewhere.'
+                f'published on {settings.SITE_NAME} or elsewhere.'
             ),
             'human_subjects_deidentified': (
                 'This project contains data obtained from human subjects, and all '
