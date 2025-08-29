@@ -75,6 +75,8 @@ class TestAccessPresubmission(TestMixin):
 
     """
 
+
+
     @prevent_request_warnings
     def test_visit_get(self):
         """
@@ -249,6 +251,16 @@ class TestAccessPresubmission(TestMixin):
 
         """
         project = ActiveProject.objects.get(title='MIMIC-III Clinical Database')
+
+        # Ensure upload agreement exists for this test
+        from project.models import UploadAgreement
+        if not UploadAgreement.objects.filter(project=project, accepted=True).exists():
+            UploadAgreement.objects.create(
+                project=project,
+                accepted=True,
+                no_human_subjects=True
+            )
+
         # Submitting author
         self.client.login(username='rgmark@mit.edu', password='Tester11!')
 
@@ -355,6 +367,16 @@ class TestAccessPresubmission(TestMixin):
         Additional test cases for project_files.
         """
         project = ActiveProject.objects.get(title='MIMIC-III Clinical Database')
+
+        # Ensure upload agreement exists for this test
+        from project.models import UploadAgreement
+        if not UploadAgreement.objects.filter(project=project, accepted=True).exists():
+            UploadAgreement.objects.create(
+                project=project,
+                accepted=True,
+                no_human_subjects=True
+            )
+
         self.client.login(username='rgmark@mit.edu', password='Tester11!')
 
         # Set a small storage allowance
@@ -656,14 +678,6 @@ class TestProjectTransfer(TestCase):
         self.project = ActiveProject.objects.get(slug=self.PROJECT_SLUG)
         self.submitting_author = self.project.authors.filter(is_submitting=True).first()
         self.coauthor = self.project.authors.filter(is_submitting=False).first()
-
-        # Create an upload agreement for the test project so file uploads work
-        from project.models import UploadAgreement
-        UploadAgreement.objects.create(
-            project=self.project,
-            accepted=True,
-            no_human_subjects=True
-        )
 
     def test_transfer_author(self):
         """
