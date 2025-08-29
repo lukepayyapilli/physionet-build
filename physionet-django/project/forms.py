@@ -39,6 +39,7 @@ from project.models import (
     Topic,
     exists_project_slug,
     UploadedDocument,
+    UploadAgreement,
 )
 from user.models import User, TrainingType
 from user.validators import validate_affiliation
@@ -1163,7 +1164,6 @@ class DataAccessResponseForm(forms.ModelForm):
             'responder_comments': forms.Textarea(attrs={'rows': 3}),
             'status': forms.Select(choices=DataAccessRequest.REJECT_ACCEPT)
         }
-
         labels = {
             'status': 'Decision',
             'responder_comments': 'Comment or Justification'
@@ -1194,6 +1194,66 @@ class DataAccessResponseForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.responder = responder
+
+
+class UploadAgreementForm(forms.ModelForm):
+    """
+    Form for accepting the upload agreement
+    """
+    class Meta:
+        model = UploadAgreement
+        fields = (
+            'no_human_subjects',
+            'derived_data',
+            'human_subjects_deidentified',
+        )
+        labels = {
+            'no_human_subjects': 'This project does not contain any data derived from human subjects.',
+            'derived_data': 'This project contains data derived from other de-identified datasets published on PhysioNet or elsewhere.',
+            'human_subjects_deidentified': 'This project contains data obtained from human subjects, and all personally identifiable information has been removed.',
+        }
+        help_texts = {
+            'derived_data': 'You will need to cite these datasets in your project description, and explain how you created the derived data. Even if you are using data previously published elsewhere, we expect you to take all reasonable steps to ensure the files you are uploading are free of personally identifiable information.',
+        }
+
+    def __init__(self, project, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.project = project
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # At least one checkbox must be selected
+        if not any([
+            cleaned_data.get('no_human_subjects'),
+            cleaned_data.get('derived_data'),
+            cleaned_data.get('human_subjects_deidentified'),
+        ]):
+            raise forms.ValidationError(
+                'Please select at least one option that applies to your project.'
+            )
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        # Check if we already have an instance (for updates)
+        if self.instance and self.instance.pk:
+            # Update existing agreement
+            agreement = self.instance
+            agreement.no_human_subjects = self.cleaned_data['no_human_subjects']
+            agreement.derived_data = self.cleaned_data['derived_data']
+            agreement.human_subjects_deidentified = self.cleaned_data['human_subjects_deidentified']
+            agreement.accepted = True
+        else:
+            # Create new agreement
+            agreement = super().save(commit=False)
+            agreement.project = self.project
+            agreement.accepted = True
+
+        if commit:
+            agreement.save()
+
+        return agreement
 
 
 class InviteDataAccessReviewerForm(forms.ModelForm):
