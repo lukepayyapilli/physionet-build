@@ -1208,8 +1208,6 @@ def project_files(request, project_slug, subdir='', **kwargs):
      move_items_form, delete_items_form) = get_file_forms(
          project=project, subdir=subdir, display_dirs=display_dirs)
 
-    # Check if upload agreement has been accepted
-    from project.models import UploadAgreement
     has_accepted_agreement = UploadAgreement.objects.filter(project=project, accepted=True).exists()
 
     return render(
