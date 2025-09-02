@@ -99,6 +99,10 @@ class TransferAuthorForm(forms.Form):
         new_author.is_submitting = True
         new_author.save()
 
+        # Invalidate any existing upload agreements since the submitting author changed
+        # The new submitting author will need to accept a new agreement
+        self.project.upload_agreements.filter(accepted=True).update(accepted=False)
+
 
 class ActiveProjectFilesForm(forms.Form):
     """
@@ -1230,9 +1234,10 @@ class UploadAgreementForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, project, *args, **kwargs):
+    def __init__(self, project, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.project = project
+        self.user = user
 
     def clean(self):
         cleaned_data = super().clean()
@@ -1258,11 +1263,15 @@ class UploadAgreementForm(forms.ModelForm):
             agreement.derived_data = self.cleaned_data['derived_data']
             agreement.human_subjects_deidentified = self.cleaned_data['human_subjects_deidentified']
             agreement.accepted = True
+            if self.user:
+                agreement.accepted_by = self.user
         else:
             # Create new agreement
             agreement = super().save(commit=False)
             agreement.project = self.project
             agreement.accepted = True
+            if self.user:
+                agreement.accepted_by = self.user
 
         if commit:
             agreement.save()

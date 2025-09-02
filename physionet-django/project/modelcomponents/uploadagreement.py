@@ -13,6 +13,15 @@ class UploadAgreement(models.Model):
         related_name='upload_agreements'
     )
 
+    # User who accepted the agreement
+    accepted_by = models.ForeignKey(
+        'user.User',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text='The user who accepted this upload agreement'
+    )
+
     # Agreement acceptance
     accepted = models.BooleanField(
         default=False,
@@ -79,5 +88,28 @@ class UploadAgreement(models.Model):
     def get_active_agreement(cls, project):
         """
         Get the active (accepted) upload agreement for a project, if it exists.
+        The agreement is only considered active if it was signed by the current submitting author.
         """
-        return cls.objects.filter(project=project, accepted=True).first()
+        try:
+            submitting_author = project.authors.get(is_submitting=True)
+        except project.authors.model.DoesNotExist:
+            return None
+        except project.authors.model.MultipleObjectsReturned:
+            raise project.authors.model.MultipleObjectsReturned(
+                f"Multiple submitting authors found for project {project.id}. "
+                "This indicates a data integrity issue."
+            )
+
+        try:
+            return cls.objects.get(
+                project=project,
+                accepted=True,
+                accepted_by=submitting_author.user
+            )
+        except cls.DoesNotExist:
+            return None
+        except cls.MultipleObjectsReturned:
+            raise cls.MultipleObjectsReturned(
+                f"Multiple active upload agreements found for project {project.id} "
+                f"and user {submitting_author.user.id}. This indicates a data integrity issue."
+            )

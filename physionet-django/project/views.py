@@ -909,10 +909,12 @@ def project_upload_agreement(request, project_slug, **kwargs):
         # Pass the existing instance if it exists
         if existing_agreement:
             upload_agreement_form = forms.UploadAgreementForm(project=project,
+                                                              user=request.user,
                                                               data=request.POST,
                                                               instance=existing_agreement)
         else:
             upload_agreement_form = forms.UploadAgreementForm(project=project,
+                                                              user=request.user,
                                                               data=request.POST)
 
         if upload_agreement_form.is_valid():
@@ -925,9 +927,11 @@ def project_upload_agreement(request, project_slug, **kwargs):
         # Get existing agreement or create new form
         if existing_agreement:
             upload_agreement_form = forms.UploadAgreementForm(project=project,
+                                                              user=request.user,
                                                               instance=existing_agreement)
         else:
-            upload_agreement_form = forms.UploadAgreementForm(project=project)
+            upload_agreement_form = forms.UploadAgreementForm(project=project,
+                                                              user=request.user)
 
     # Disable form fields if not editable
     if not editable:
