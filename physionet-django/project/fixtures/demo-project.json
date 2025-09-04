@@ -2293,5 +2293,110 @@
     "object_id": 1,
     "document": "ethics/Ethics_Approval_567b029d-9ea6-41b8-b738-bf45675b24ce.txt"
   }
+},
+{
+  "model": "project.uploadagreement",
+  "pk": 1,
+  "fields": {
+    "project": 1,
+    "accepted_by": 2,
+    "accepted": true,
+    "accepted_datetime": "2018-09-04T17:26:24.820Z",
+    "no_human_subjects": true,
+    "derived_data": false,
+    "human_subjects_deidentified": false,
+    "created_datetime": "2018-09-04T17:26:24.820Z",
+    "updated_datetime": "2018-09-04T17:26:24.820Z"
+  }
+},
+{
+  "model": "project.uploadagreement",
+  "pk": 2,
+  "fields": {
+    "project": 2,
+    "accepted_by": 2,
+    "accepted": true,
+    "accepted_datetime": "2018-09-04T17:26:24.820Z",
+    "no_human_subjects": true,
+    "derived_data": false,
+    "human_subjects_deidentified": false,
+    "created_datetime": "2018-09-04T17:26:24.820Z",
+    "updated_datetime": "2018-09-04T17:26:24.820Z"
+  }
+},
+{
+  "model": "project.uploadagreement",
+  "pk": 3,
+  "fields": {
+    "project": 4,
+    "accepted_by": 4,
+    "accepted": true,
+    "accepted_datetime": "2018-09-04T17:26:24.820Z",
+    "no_human_subjects": true,
+    "derived_data": false,
+    "human_subjects_deidentified": false,
+    "created_datetime": "2018-09-04T17:26:24.820Z",
+    "updated_datetime": "2018-09-04T17:26:24.820Z"
+  }
+},
+{
+  "model": "project.uploadagreement",
+  "pk": 4,
+  "fields": {
+    "project": 5,
+    "accepted_by": 4,
+    "accepted": true,
+    "accepted_datetime": "2018-09-04T17:26:24.820Z",
+    "no_human_subjects": true,
+    "derived_data": false,
+    "human_subjects_deidentified": false,
+    "created_datetime": "2018-09-04T17:26:24.820Z",
+    "updated_datetime": "2018-09-04T17:26:24.820Z"
+  }
+},
+{
+  "model": "project.uploadagreement",
+  "pk": 5,
+  "fields": {
+    "project": 7,
+    "accepted_by": 4,
+    "accepted": true,
+    "accepted_datetime": "2018-09-04T17:26:24.820Z",
+    "no_human_subjects": true,
+    "derived_data": false,
+    "human_subjects_deidentified": false,
+    "created_datetime": "2018-09-04T17:26:24.820Z",
+    "updated_datetime": "2018-09-04T17:26:24.820Z"
+  }
+},
+{
+  "model": "project.uploadagreement",
+  "pk": 6,
+  "fields": {
+    "project": 8,
+    "accepted_by": 1,
+    "accepted": true,
+    "accepted_datetime": "2018-09-04T17:26:24.820Z",
+    "no_human_subjects": true,
+    "derived_data": false,
+    "human_subjects_deidentified": false,
+    "created_datetime": "2018-09-04T17:26:24.820Z",
+    "updated_datetime": "2018-09-04T17:26:24.820Z"
+  }
+},
+{
+  "model": "project.uploadagreement",
+  "pk": 7,
+  "fields": {
+    "project": 9,
+    "accepted_by": 1,
+    "accepted": true,
+    "accepted_datetime": "2018-09-04T17:26:24.820Z",
+    "no_human_subjects": true,
+    "derived_data": false,
+    "human_subjects_deidentified": false,
+    "created_datetime": "2018-09-04T17:26:24.820Z",
+    "updated_datetime": "2018-09-04T17:26:24.820Z"
+  }
 }
 ]
