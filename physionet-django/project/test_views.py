@@ -25,6 +25,7 @@ from project.models import (
     PublishedProject,
     StorageRequest,
     SubmissionStatus,
+    UploadAgreement,
     AWS
 )
 from user.models import User
@@ -252,15 +253,6 @@ class TestAccessPresubmission(TestMixin):
         """
         project = ActiveProject.objects.get(title='MIMIC-III Clinical Database')
 
-        # Ensure upload agreement exists for this test
-        from project.models import UploadAgreement
-        if not UploadAgreement.objects.filter(project=project, accepted=True).exists():
-            UploadAgreement.objects.create(
-                project=project,
-                accepted=True,
-                no_human_subjects=True
-            )
-
         # Submitting author
         self.client.login(username='rgmark@mit.edu', password='Tester11!')
 
@@ -368,15 +360,6 @@ class TestAccessPresubmission(TestMixin):
         """
         project = ActiveProject.objects.get(title='MIMIC-III Clinical Database')
 
-        # Ensure upload agreement exists for this test
-        from project.models import UploadAgreement
-        if not UploadAgreement.objects.filter(project=project, accepted=True).exists():
-            UploadAgreement.objects.create(
-                project=project,
-                accepted=True,
-                no_human_subjects=True
-            )
-
         self.client.login(username='rgmark@mit.edu', password='Tester11!')
 
         # Set a small storage allowance
@@ -446,9 +429,10 @@ class TestProjectCreation(TestMixin):
         self.assertEqual(response.status_code, 200)
 
         # Create an upload agreement for the new project so file uploads work
-        from project.models import UploadAgreement
+        submitting_author = project.authors.get(is_submitting=True)
         UploadAgreement.objects.create(
             project=project,
+            accepted_by=submitting_author.user,
             accepted=True,
             no_human_subjects=True
         )
