@@ -906,16 +906,10 @@ def project_upload_agreement(request, project_slug, **kwargs):
     existing_agreement = UploadAgreement.get_active_agreement(project)
 
     if request.method == 'POST':
-        # Pass the existing instance if it exists
-        if existing_agreement:
-            upload_agreement_form = forms.UploadAgreementForm(project=project,
-                                                              user=request.user,
-                                                              data=request.POST,
-                                                              instance=existing_agreement)
-        else:
-            upload_agreement_form = forms.UploadAgreementForm(project=project,
-                                                              user=request.user,
-                                                              data=request.POST)
+        upload_agreement_form = forms.UploadAgreementForm(project=project,
+                                                          user=request.user,
+                                                          data=request.POST,
+                                                          instance=existing_agreement)
 
         if upload_agreement_form.is_valid():
             upload_agreement_form.save()
@@ -925,13 +919,9 @@ def project_upload_agreement(request, project_slug, **kwargs):
             messages.error(request, 'Invalid submission. See errors below.')
     else:
         # Get existing agreement or create new form
-        if existing_agreement:
-            upload_agreement_form = forms.UploadAgreementForm(project=project,
-                                                              user=request.user,
-                                                              instance=existing_agreement)
-        else:
-            upload_agreement_form = forms.UploadAgreementForm(project=project,
-                                                              user=request.user)
+        upload_agreement_form = forms.UploadAgreementForm(project=project,
+                                                          user=request.user,
+                                                          instance=existing_agreement)
 
     # Disable form fields if not editable
     if not editable:
