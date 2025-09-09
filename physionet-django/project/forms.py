@@ -1254,28 +1254,12 @@ class UploadAgreementForm(forms.ModelForm):
 
         return cleaned_data
 
-    def save(self, commit=True):
-        # Check if we already have an instance (for updates)
-        if self.instance and self.instance.pk:
-            # Update existing agreement
-            agreement = self.instance
-            agreement.no_human_subjects = self.cleaned_data['no_human_subjects']
-            agreement.derived_data = self.cleaned_data['derived_data']
-            agreement.human_subjects_deidentified = self.cleaned_data['human_subjects_deidentified']
-            agreement.accepted = True
-            if self.user:
-                agreement.accepted_by = self.user
-        else:
-            # Create new agreement
-            agreement = super().save(commit=False)
-            agreement.project = self.project
-            agreement.accepted = True
-            if self.user:
-                agreement.accepted_by = self.user
-
-        if commit:
-            agreement.save()
-
+    def save(self):
+        agreement = super().save(commit=False)
+        agreement.project = self.project
+        agreement.accepted = True
+        agreement.accepted_by = self.user
+        agreement.save()
         return agreement
 
 
