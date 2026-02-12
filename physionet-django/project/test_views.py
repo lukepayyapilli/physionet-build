@@ -13,20 +13,17 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
-from project.forms import ContentForm
 from project.models import (
     AccessLog,
     AccessPolicy,
     ActiveProject,
     Author,
     AuthorInvitation,
-    CoreProject,
     DataAccessRequest,
     DataAccessRequestReviewer,
     DUASignature,
     License,
     Log,
-    ProjectType,
     PublishedAuthor,
     PublishedProject,
     StorageRequest,
@@ -2019,3 +2016,79 @@ class TestProjectViewsMetric(TestMixin):
         self.assertGreater(len(page), 0)
         self.assertLessEqual(len(page), 12)
         self.assertFalse(page.has_next())
+
+    def test_chart_data_in_context(self):
+        """chart_data is present in the metrics page context."""
+        project = PublishedProject.objects.get(title='Demo ECG Signal Toolbox')
+        response = self.client.get(reverse('published_project_metrics',
+                                           args=(project.slug, project.version)))
+        self.assertIn('chart_data', response.context)
+
+    def test_chart_data_empty_when_no_views(self):
+        """chart_data is an empty JSON array when there are no views."""
+        project = PublishedProject.objects.get(title='Demo ECG Signal Toolbox')
+        response = self.client.get(reverse('published_project_metrics',
+                                           args=(project.slug, project.version)))
+        data = json.loads(response.context['chart_data'])
+        self.assertEqual(data, [])
+
+    def test_chart_data_structure(self):
+        """chart_data entries have 'month' and 'count' keys."""
+        project = PublishedProject.objects.get(title='Demo ECG Signal Toolbox')
+        user = User.objects.get(email='rgmark@mit.edu')
+        content_type = ContentType.objects.get_for_model(project)
+
+        AccessLog.objects.create(
+            user=user, object_id=project.id, content_type=content_type, data='')
+
+        response = self.client.get(reverse('published_project_metrics',
+                                           args=(project.slug, project.version)))
+        data = json.loads(response.context['chart_data'])
+        self.assertGreater(len(data), 0)
+        self.assertIn('month', data[0])
+        self.assertIn('count', data[0])
+
+    def test_chart_data_chronological_order(self):
+        """chart_data is in chronological order (oldest first)."""
+        project = PublishedProject.objects.get(title='Demo ECG Signal Toolbox')
+        user = User.objects.get(email='rgmark@mit.edu')
+        content_type = ContentType.objects.get_for_model(project)
+
+        now = timezone.now()
+        old_month = now - timedelta(days=60)
+
+        log1 = AccessLog.objects.create(
+            user=user, object_id=project.id, content_type=content_type, data='')
+        AccessLog.objects.filter(pk=log1.pk).update(creation_datetime=old_month)
+        AccessLog.objects.create(
+            user=user, object_id=project.id, content_type=content_type, data='')
+
+        response = self.client.get(reverse('published_project_metrics',
+                                           args=(project.slug, project.version)))
+        data = json.loads(response.context['chart_data'])
+        self.assertEqual(len(data), 2)
+        # First entry should be the older month
+        from datetime import datetime
+        dates = [datetime.strptime(d['month'], '%b %Y') for d in data]
+        self.assertLess(dates[0], dates[1])
+
+
+class TestFormatChartData(TestCase):
+    """Unit tests for the _format_chart_data helper."""
+
+    def test_empty_list(self):
+        from project.views import _format_chart_data
+        result = json.loads(_format_chart_data([]))
+        self.assertEqual(result, [])
+
+    def test_formats_month_and_count(self):
+        from project.views import _format_chart_data
+        from datetime import date
+        views = [
+            {'month': date(2024, 1, 1), 'count': 5},
+            {'month': date(2024, 12, 1), 'count': 10},
+        ]
+        result = json.loads(_format_chart_data(views))
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0], {'month': 'Jan 2024', 'count': 5})
+        self.assertEqual(result[1], {'month': 'Dec 2024', 'count': 10})
